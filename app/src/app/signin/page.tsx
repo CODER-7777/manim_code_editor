@@ -1,10 +1,40 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, Mail, Lock, GitBranch } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowRight, Mail, Lock, GitBranch, AlertCircle } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 
 export default function SignInPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  
+  const router = useRouter();
+  const supabase = createClient();
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (signInError) {
+      setError(signInError.message);
+      setLoading(false);
+    } else {
+      router.push("/creator");
+      router.refresh();
+    }
+  };
+
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-6 relative">
       <motion.div
@@ -21,13 +51,23 @@ export default function SignInPage() {
           <p className="text-text-muted">Sign in to continue creating animations.</p>
         </div>
 
-        <form className="space-y-4 relative z-10">
+        {error && (
+          <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-2 relative z-10">
+            <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+            <p className="text-sm text-red-500">{error}</p>
+          </div>
+        )}
+
+        <form onSubmit={handleSignIn} className="space-y-4 relative z-10">
           <div>
             <label className="block text-sm font-medium text-text-secondary mb-1.5">Email</label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
               <input
                 type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 className="w-full pl-10 pr-4 py-3 bg-bg-alt border border-border rounded-xl outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50 transition-all text-sm"
               />
@@ -40,6 +80,9 @@ export default function SignInPage() {
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
               <input
                 type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 className="w-full pl-10 pr-4 py-3 bg-bg-alt border border-border rounded-xl outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50 transition-all text-sm"
               />
@@ -57,11 +100,12 @@ export default function SignInPage() {
           </div>
 
           <button
-            type="button"
-            className="w-full py-3 px-4 bg-accent text-white font-semibold rounded-xl hover:bg-accent-hover transition-all flex items-center justify-center gap-2 group shadow-lg shadow-accent/20"
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 px-4 bg-accent text-white font-semibold rounded-xl hover:bg-accent-hover transition-all flex items-center justify-center gap-2 group shadow-lg shadow-accent/20 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Sign In
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            {loading ? "Signing In..." : "Sign In"}
+            {!loading && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
           </button>
         </form>
 

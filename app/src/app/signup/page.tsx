@@ -1,10 +1,50 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, Mail, Lock, User, GitBranch } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowRight, Mail, Lock, User, GitBranch, AlertCircle, CheckCircle2 } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 
 export default function SignUpPage() {
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  
+  const router = useRouter();
+  const supabase = createClient();
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    const { error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+        },
+      },
+    });
+
+    if (signUpError) {
+      setError(signUpError.message);
+      setLoading(false);
+    } else {
+      setSuccess(true);
+      setLoading(false);
+      setTimeout(() => {
+        router.push("/creator");
+      }, 2000);
+    }
+  };
+
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-6 relative">
       <motion.div
@@ -21,13 +61,30 @@ export default function SignUpPage() {
           <p className="text-text-muted">Join the fastest way to write Manim code.</p>
         </div>
 
-        <form className="space-y-4 relative z-10">
+        {error && (
+          <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-2 relative z-10">
+            <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+            <p className="text-sm text-red-500">{error}</p>
+          </div>
+        )}
+
+        {success && (
+          <div className="mb-4 p-3 rounded-xl bg-green-500/10 border border-green-500/20 flex items-start gap-2 relative z-10">
+            <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
+            <p className="text-sm text-green-500">Account created successfully! Redirecting...</p>
+          </div>
+        )}
+
+        <form onSubmit={handleSignUp} className="space-y-4 relative z-10">
           <div>
             <label className="block text-sm font-medium text-text-secondary mb-1.5">Full Name</label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
               <input
                 type="text"
+                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
                 placeholder="Grant Sanderson"
                 className="w-full pl-10 pr-4 py-3 bg-bg-alt border border-border rounded-xl outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50 transition-all text-sm"
               />
@@ -40,6 +97,9 @@ export default function SignUpPage() {
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
               <input
                 type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 className="w-full pl-10 pr-4 py-3 bg-bg-alt border border-border rounded-xl outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50 transition-all text-sm"
               />
@@ -52,6 +112,9 @@ export default function SignUpPage() {
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
               <input
                 type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 className="w-full pl-10 pr-4 py-3 bg-bg-alt border border-border rounded-xl outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50 transition-all text-sm"
               />
@@ -59,11 +122,12 @@ export default function SignUpPage() {
           </div>
 
           <button
-            type="button"
-            className="w-full py-3 px-4 mt-2 bg-accent text-white font-semibold rounded-xl hover:bg-accent-hover transition-all flex items-center justify-center gap-2 group shadow-lg shadow-accent/20"
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 px-4 mt-2 bg-accent text-white font-semibold rounded-xl hover:bg-accent-hover transition-all flex items-center justify-center gap-2 group shadow-lg shadow-accent/20 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Create Account
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            {loading ? "Creating Account..." : "Create Account"}
+            {!loading && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
           </button>
         </form>
 

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Code2,
@@ -13,8 +14,11 @@ import {
   Moon,
   Menu,
   X,
+  LogOut,
+  User as UserIcon,
 } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
+import { createClient } from "@/utils/supabase/client";
 
 const navLinks = [
   { href: "/creator", label: "Creator", icon: Sparkles },
@@ -27,6 +31,28 @@ const navLinks = [
 export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const router = useRouter();
+  const supabase = createClient();
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
+    };
+    checkUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase.auth]);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.refresh();
+  };
 
   return (
     <header className="fixed top-0 left-0 w-full z-50">
@@ -36,7 +62,6 @@ export default function Navbar() {
           <Link href="/" className="flex items-center gap-2 group">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-accent/10 border border-accent/20">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {/* 3b1b inspired logo: Blue curve and Brown circle */}
                 <path d="M3 12C3 12 7 5 12 5C17 5 21 12 21 12C21 12 17 19 12 19C7 19 3 12 3 12Z" className="stroke-accent" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                 <circle cx="12" cy="12" r="3" className="fill-accent-brown"/>
               </svg>
@@ -62,7 +87,35 @@ export default function Navbar() {
           </ul>
 
           {/* Right Side */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
+            
+            <div className="hidden md:flex items-center gap-2">
+              {user ? (
+                <button
+                  onClick={handleSignOut}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-text-secondary hover:text-text hover:bg-surface-hover transition-all duration-200"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Sign Out
+                </button>
+              ) : (
+                <>
+                  <Link
+                    href="/signin"
+                    className="px-4 py-2 rounded-lg text-sm font-medium text-text-secondary hover:text-text hover:bg-surface-hover transition-all duration-200"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/signup"
+                    className="px-4 py-2 rounded-lg text-sm font-medium bg-accent text-white hover:bg-accent-hover transition-all duration-200"
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
+            </div>
+
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
@@ -118,6 +171,42 @@ export default function Navbar() {
                   </Link>
                 </li>
               ))}
+              
+              <div className="h-px w-full bg-border my-2" />
+              
+              {user ? (
+                <li>
+                  <button
+                    onClick={() => { handleSignOut(); setMobileOpen(false); }}
+                    className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-text-secondary hover:text-text hover:bg-surface-hover transition-all duration-200"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </button>
+                </li>
+              ) : (
+                <>
+                  <li>
+                    <Link
+                      href="/signin"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-text-secondary hover:text-text hover:bg-surface-hover transition-all duration-200"
+                    >
+                      <UserIcon className="w-4 h-4" />
+                      Sign In
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/signup"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center justify-center gap-2 px-3 py-2.5 mt-2 rounded-lg text-sm font-medium bg-accent text-white hover:bg-accent-hover transition-all duration-200"
+                    >
+                      Sign Up
+                    </Link>
+                  </li>
+                </>
+              )}
             </ul>
           </motion.div>
         )}
@@ -125,3 +214,4 @@ export default function Navbar() {
     </header>
   );
 }
+

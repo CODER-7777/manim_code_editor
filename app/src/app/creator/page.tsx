@@ -74,13 +74,24 @@ export default function CreatorPage() {
     ]);
   };
 
+  // Dynamic theme variables based on AI Provider
+  const isOllama = aiProvider === "ollama";
+  const themeBg = isOllama ? "bg-accent-brown" : "bg-accent";
+  const themeText = isOllama ? "text-accent-brown" : "text-accent";
+  const themeHoverText = isOllama ? "hover:text-accent-brown" : "hover:text-accent";
+  const themeGlow = isOllama ? "bg-accent-brown/20" : "bg-accent-glow";
+  const themeHoverBg = isOllama ? "hover:bg-opacity-90" : "hover:bg-accent-hover";
+  const themeBorder = isOllama ? "focus:border-accent-brown/50" : "focus:border-accent/50";
+  const themeOpacity = isOllama ? "bg-accent-brown/40" : "bg-accent/40";
+  const themeBgLight = isOllama ? "bg-accent-brown/10" : "bg-accent/10";
+
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col max-w-4xl mx-auto px-4">
       {/* Header */}
       <div className="flex items-center justify-between py-4 border-b border-border shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-accent-glow flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-accent" />
+          <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${themeGlow}`}>
+            <Sparkles className={`w-4 h-4 transition-colors ${themeText}`} />
           </div>
           <div>
             <h1 className="font-semibold text-text text-sm">AI Creator</h1>
@@ -94,7 +105,7 @@ export default function CreatorPage() {
             <button
               onClick={() => setAiProvider("gemini")}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-all ${
-                aiProvider === "gemini"
+                !isOllama
                   ? "bg-accent text-white"
                   : "text-text-muted hover:text-text"
               }`}
@@ -105,8 +116,8 @@ export default function CreatorPage() {
             <button
               onClick={() => setAiProvider("ollama")}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-all ${
-                aiProvider === "ollama"
-                  ? "bg-accent text-white"
+                isOllama
+                  ? "bg-accent-brown text-white"
                   : "text-text-muted hover:text-text"
               }`}
             >
@@ -137,15 +148,15 @@ export default function CreatorPage() {
               className={`flex gap-3 ${msg.role === "user" ? "justify-end" : ""}`}
             >
               {msg.role === "assistant" && (
-                <div className="w-7 h-7 rounded-lg bg-accent-glow flex items-center justify-center shrink-0 mt-0.5">
-                  <Bot className="w-3.5 h-3.5 text-accent" />
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 transition-colors ${themeGlow}`}>
+                  <Bot className={`w-3.5 h-3.5 transition-colors ${themeText}`} />
                 </div>
               )}
 
               <div
-                className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed transition-colors ${
                   msg.role === "user"
-                    ? "bg-accent text-white rounded-br-md"
+                    ? `${themeBg} text-white rounded-br-md`
                     : "bg-surface border border-border text-text rounded-bl-md"
                 }`}
               >
@@ -155,7 +166,7 @@ export default function CreatorPage() {
                 {msg.role === "assistant" && msg.id !== "welcome" && (
                   <button
                     onClick={() => handleCopy(msg.id, msg.content)}
-                    className="mt-2 flex items-center gap-1 text-xs text-text-muted hover:text-accent transition-colors"
+                    className={`mt-2 flex items-center gap-1 text-xs text-text-muted transition-colors ${themeHoverText}`}
                   >
                     {copiedId === msg.id ? (
                       <>
@@ -171,8 +182,8 @@ export default function CreatorPage() {
               </div>
 
               {msg.role === "user" && (
-                <div className="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center shrink-0 mt-0.5">
-                  <User className="w-3.5 h-3.5 text-accent" />
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 transition-colors ${themeBgLight}`}>
+                  <User className={`w-3.5 h-3.5 transition-colors ${themeText}`} />
                 </div>
               )}
             </motion.div>
@@ -186,14 +197,14 @@ export default function CreatorPage() {
             animate={{ opacity: 1 }}
             className="flex gap-3"
           >
-            <div className="w-7 h-7 rounded-lg bg-accent-glow flex items-center justify-center shrink-0">
-              <Bot className="w-3.5 h-3.5 text-accent" />
+            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${themeGlow}`}>
+              <Bot className={`w-3.5 h-3.5 transition-colors ${themeText}`} />
             </div>
             <div className="bg-surface border border-border rounded-2xl rounded-bl-md px-4 py-3">
               <div className="flex gap-1">
-                <span className="w-2 h-2 rounded-full bg-accent/40 animate-bounce" style={{ animationDelay: "0ms" }} />
-                <span className="w-2 h-2 rounded-full bg-accent/40 animate-bounce" style={{ animationDelay: "150ms" }} />
-                <span className="w-2 h-2 rounded-full bg-accent/40 animate-bounce" style={{ animationDelay: "300ms" }} />
+                <span className={`w-2 h-2 rounded-full animate-bounce transition-colors ${themeOpacity}`} style={{ animationDelay: "0ms" }} />
+                <span className={`w-2 h-2 rounded-full animate-bounce transition-colors ${themeOpacity}`} style={{ animationDelay: "150ms" }} />
+                <span className={`w-2 h-2 rounded-full animate-bounce transition-colors ${themeOpacity}`} style={{ animationDelay: "300ms" }} />
               </div>
             </div>
           </motion.div>
@@ -217,14 +228,14 @@ export default function CreatorPage() {
               }}
               placeholder="Describe your animation..."
               rows={1}
-              className="w-full resize-none rounded-xl border border-border bg-surface px-4 py-3 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-accent/50 transition-colors"
+              className={`w-full resize-none rounded-xl border border-border bg-surface px-4 py-3 text-sm text-text placeholder:text-text-muted focus:outline-none transition-colors ${themeBorder}`}
               style={{ minHeight: "44px", maxHeight: "120px" }}
             />
           </div>
           <button
             onClick={handleSend}
             disabled={!input.trim() || isLoading}
-            className="w-11 h-11 rounded-xl bg-accent text-white flex items-center justify-center hover:bg-accent-hover transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+            className={`w-11 h-11 rounded-xl text-white flex items-center justify-center transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0 ${themeBg} ${themeHoverBg}`}
           >
             <Send className="w-4 h-4" />
           </button>
