@@ -1,0 +1,204 @@
+@import "tailwindcss";
+
+/* ========================================
+   MANIM CODE EDITOR — DESIGN SYSTEM
+   Clean • Smooth • Mathematical • Code
+   ======================================== */
+
+/* ---------- Light Mode (default) ---------- */
+:root {
+  --bg: #F0F2F5;
+  --bg-alt: #E4E7EB;
+  --surface: #FFFFFF;
+  --surface-hover: #F8F9FA;
+  --text: #111111;
+  --text-secondary: #444444;
+  --text-muted: #777777;
+  --accent: #317B96;
+  --accent-bright: #58C4DD;
+  --accent-brown: #8C6239;
+  --accent-hover: #235A6E;
+  --accent-glow: rgba(49, 123, 150, 0.15);
+  --border: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.15);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --dot-color: rgba(0, 0, 0, 0.1);
+  --code-bg: #1E1E2E;
+  --code-text: #CDD6F4;
+  --gradient-text-from: #111111;
+  --gradient-text-to: #333333;
+  --navbar-bg: rgba(255, 255, 255, 0.85);
+  --scrollbar-track: #E4E7EB;
+  --scrollbar-thumb: #C0C5CC;
+}
+
+/* ---------- Dark Mode ---------- */
+[data-theme="dark"] {
+  --bg: #0A0E14;
+  --bg-alt: #0F1318;
+  --surface: #161B22;
+  --surface-hover: #1C222B;
+  --text: #E8ECEF;
+  --text-secondary: #B0B8C4;
+  --text-muted: #6B7685;
+  --accent: #58C4DD;
+  --accent-bright: #89D9EB;
+  --accent-brown: #B8865C;
+  --accent-hover: #317B96;
+  --accent-glow: rgba(88, 196, 221, 0.12);
+  --border: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --dot-color: rgba(255, 255, 255, 0.06);
+  --code-bg: #0D1117;
+  --code-text: #E6EDF3;
+  --gradient-text-from: #E8ECEF;
+  --gradient-text-to: #B0B8C4;
+  --navbar-bg: rgba(10, 14, 20, 0.85);
+  --scrollbar-track: #161B22;
+  --scrollbar-thumb: #2D333B;
+}
+
+/* ---------- Tailwind Theme Integration ---------- */
+@theme {
+  --color-bg: var(--bg);
+  --color-bg-alt: var(--bg-alt);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-text: var(--text);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-bright: var(--accent-bright);
+  --color-accent-brown: var(--accent-brown);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-glow: var(--accent-glow);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-code-bg: var(--code-bg);
+  --color-code-text: var(--code-text);
+  --color-navbar-bg: var(--navbar-bg);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
+}
+
+/* ---------- Base Styles ---------- */
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  overflow-x: hidden;
+}
+
+/* ---------- Scrollbar ---------- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* ---------- Selection ---------- */
+::selection {
+  background-color: var(--accent-glow);
+  color: var(--text);
+}
+
+/* ---------- Dot Grid Background ---------- */
+.dot-grid {
+  background-image: radial-gradient(var(--dot-color) 1.2px, transparent 1.2px);
+  background-size: 32px 32px;
+}
+
+/* ---------- Glassmorphism ---------- */
+.glass {
+  background: var(--navbar-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+/* ---------- Code Block Aesthetic ---------- */
+.code-block {
+  background: var(--code-bg);
+  color: var(--code-text);
+  border-radius: 12px;
+  padding: 1.5rem;
+  font-family: var(--font-jetbrains-mono), 'Fira Code', monospace;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+.code-block::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-bright), transparent);
+}
+
+/* ---------- Gradient Text ---------- */
+.gradient-text {
+  background: linear-gradient(180deg, var(--gradient-text-from), var(--gradient-text-to));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gradient-text-accent {
+  background: linear-gradient(135deg, var(--accent), var(--accent-brown));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ---------- Blinking Cursor ---------- */
+.cursor-blink::after {
+  content: '|';
+  animation: blink 1s step-end infinite;
+  color: var(--accent);
+  font-weight: 300;
+}
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* ---------- Glow ---------- */
+.glow {
+  box-shadow: 0 0 20px var(--accent-glow), 0 0 60px var(--accent-glow);
+}
+
+/* ---------- Float Animation ---------- */
+@keyframes sine-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+.float-sine {
+  animation: sine-float 6s ease-in-out infinite;
+}
+
+/* ---------- Terminal Prompt ---------- */
+.terminal-prompt::before {
+  content: '$ ';
+  color: var(--accent);
+  font-weight: 700;
+}
