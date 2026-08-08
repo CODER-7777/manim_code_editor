@@ -10,20 +10,28 @@
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 4. Click **Deploy**. Vercel will build and host your Next.js app on its edge network for free.
 
-### 2. Backend (FastAPI + Celery + Manim) -> DigitalOcean Droplet
-Because Manim requires heavy system dependencies, we use a Dockerized backend on a DigitalOcean Droplet.
+### 2. Backend (FastAPI + Celery + Manim) -> Microsoft Azure (Ubuntu VM)
+Because Manim requires heavy system dependencies, we use a Dockerized backend on an Azure Virtual Machine.
 
-1. **Create a Droplet**: Sign up for DigitalOcean (use GitHub Student Pack for credits). Create an Ubuntu Droplet (at least 2GB RAM recommended).
-2. **SSH into the Droplet**:
+1. **Claim Azure for Students**: Go to [Azure for Students](https://azure.microsoft.com/en-us/free/students/), sign in with your GitHub/student email, and claim your $100 credit.
+2. **Create a Virtual Machine**:
+   - Go to the Azure Portal -> Virtual Machines -> Create.
+   - Choose **Ubuntu Server 24.04 LTS** (or 22.04 LTS).
+   - Size: Select `Standard_B2s` (gives you 4GB RAM, perfect for rendering).
+   - Authentication type: Select **Password** (or SSH public key if you know how to use it) and create a username/password.
+   - In Inbound Port Rules, allow **SSH (22)** and **HTTP (80)**.
+3. **SSH into the VM**: Open your terminal and connect to the public IP address Azure gives you:
    ```bash
-   ssh root@<your_droplet_ip>
+   ssh your_username@<your_azure_vm_ip>
    ```
-3. **Install Docker & Docker Compose**:
+4. **Install Docker & Docker Compose**:
    ```bash
    sudo apt update
-   sudo apt install docker.io docker-compose
+   sudo apt install docker.io docker-compose -y
+   sudo usermod -aG docker $USER
+   newgrp docker
    ```
-4. **Clone the Repo** (or just the `backend/` folder).
+5. **Clone the Repo** (or just the `backend/` folder).
 5. **Set Environment Variables**:
    Create a `.env` file in the `backend/` directory on the server with:
    ```env

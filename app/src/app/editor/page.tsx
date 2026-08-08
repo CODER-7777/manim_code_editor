@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Play,
   Save,
@@ -33,25 +33,84 @@ export default function EditorPage() {
   const [isRunning, setIsRunning] = useState(false);
   const [consoleOpen, setConsoleOpen] = useState(true);
   const [fileName, setFileName] = useState("scene.py");
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
 
-  const handleRun = () => {
+  // Persist code to localStorage so Render page can access it
+  useEffect(() => {
+    localStorage.setItem("manim-editor-code", code);
+  }, [code]);
+
+  const handleRun = async () => {
     setIsRunning(true);
     setConsoleOutput((prev) => prev + `\n$ manim render ${fileName} -ql\n`);
+    setVideoUrl(null);
 
-    setTimeout(() => {
-      setConsoleOutput((prev) => prev + "Manim Community v0.18.0\n");
-    }, 400);
-    setTimeout(() => {
-      setConsoleOutput((prev) => prev + "[08/07/26 13:50:00] INFO  Rendering scene...\n");
-    }, 800);
-    setTimeout(() => {
-      setConsoleOutput(
-        (prev) =>
-          prev +
-          "[08/07/26 13:50:03] INFO  File ready at media/videos/scene/480p15/MyScene.mp4\n\n✓ Render complete!\n"
-      );
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/render`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, project_id: "temp_project" }),
+      });
+
+      if (!response.ok) throw new Error("Failed to start render");
+      
+      const { task_id } = await response.json();
+      setConsoleOutput((prev) => prev + `[INFO] Uploaded code to cloud. Task ID: ${task_id}\n`);
+
+      const poll = setInterval(async () => {
+        try {
+          const statusRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/status/${task_id}`);
+          const statusData = await statusRes.json();
+
+          setConsoleOutput((prev) => prev + `[STATUS] ${statusData.status}...\n`);
+
+          if (statusData.status === "SUCCESS") {
+            clearInterval(poll);
+            setIsRunning(false);
+            
+            if (statusData.result && statusData.result.video_url) {
+                setConsoleOutput((prev) => prev + `\n✓ Render complete! Video ready.\n`);
+                setVideoUrl(statusData.result.video_url);
+            } else if (statusData.result && statusData.result.error) {
+                setConsoleOutput((prev) => prev + `\n❌ Error: ${statusData.result.error}\n`);
+                if (statusData.result.details) {
+                    setConsoleOutput((prev) => prev + `${statusData.result.details}\n`);
+                }
+            }
+          } else if (statusData.status === "FAILURE") {
+            clearInterval(poll);
+            setIsRunning(false);
+            setConsoleOutput((prev) => prev + `\n❌ Render failed!\n`);
+          }
+        } catch (e) {
+          clearInterval(poll);
+          setIsRunning(false);
+          setConsoleOutput((prev) => prev + `\n❌ Polling error: ${e}\n`);
+        }
+      }, 2000);
+    } catch (e) {
       setIsRunning(false);
-    }, 2000);
+      setConsoleOutput((prev) => prev + `\n❌ Error: ${e}\n`);
+    }
+  };
+
+  const handleSave = () => {
+    const blob = new Blob([code], { type: "text/x-python" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadVideo = () => {
+    if (!videoUrl) return;
+    const a = document.createElement("a");
+    a.href = videoUrl;
+    a.download = `${fileName.replace(".py", "")}.mp4`;
+    a.target = "_blank";
+    a.click();
   };
 
   return (
@@ -79,10 +138,10 @@ export default function EditorPage() {
             <Play className="w-3 h-3" />
             {isRunning ? "Running..." : "Run"}
           </button>
-          <button className="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:text-text hover:bg-surface-hover transition-all" title="Save">
+          <button onClick={handleSave} className="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:text-text hover:bg-surface-hover transition-all" title="Save code as .py">
             <Save className="w-4 h-4" />
           </button>
-          <button className="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:text-text hover:bg-surface-hover transition-all" title="Download">
+          <button onClick={handleDownloadVideo} disabled={!videoUrl} className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${videoUrl ? 'text-text-muted hover:text-text hover:bg-surface-hover' : 'text-text-muted/30 cursor-not-allowed'}`} title="Download video">
             <Download className="w-4 h-4" />
           </button>
           <button
@@ -146,13 +205,17 @@ export default function EditorPage() {
 
           {/* Preview Area */}
           <div className="flex-1 flex items-center justify-center p-8 min-h-[200px]">
-            <div className="text-center">
-              <div className="w-20 h-20 rounded-2xl bg-surface border border-border shadow-sm mx-auto mb-4 flex items-center justify-center">
-                <Play className="w-8 h-8 text-accent/50" />
+            {videoUrl ? (
+              <video src={videoUrl} controls autoPlay className="w-full rounded-lg shadow-lg border border-border" />
+            ) : (
+              <div className="text-center">
+                <div className="w-20 h-20 rounded-2xl bg-surface border border-border shadow-sm mx-auto mb-4 flex items-center justify-center">
+                  <Play className="w-8 h-8 text-accent/50" />
+                </div>
+                <p className="text-sm font-medium text-text-secondary">Click Run to see preview</p>
+                <p className="text-xs text-text-muted mt-1">Output will appear here</p>
               </div>
-              <p className="text-sm font-medium text-text-secondary">Click Run to see preview</p>
-              <p className="text-xs text-text-muted mt-1">Output will appear here</p>
-            </div>
+            )}
           </div>
         </div>
       </div>

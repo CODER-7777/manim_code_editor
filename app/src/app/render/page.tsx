@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Play, Download, Film, Monitor, Smartphone, CheckCircle2 } from "lucide-react";
+import { Play, Download, Film, Monitor, Smartphone, CheckCircle2, AlertCircle } from "lucide-react";
 
 const qualities = [
   { id: "480p", label: "480p", desc: "Low — fast render", fps: 15, flag: "-ql" },
@@ -23,23 +23,93 @@ export default function RenderPage() {
   const [isRendering, setIsRendering] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isDone, setIsDone] = useState(false);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [code, setCode] = useState<string | null>(null);
 
-  const startRender = () => {
+  useEffect(() => {
+    const savedCode = localStorage.getItem("manim-editor-code");
+    setCode(savedCode);
+  }, []);
+
+  const startRender = async () => {
+    if (!code) {
+      setError("No code found! Go to the Editor page, write your code, and save it first.");
+      return;
+    }
+
     setIsRendering(true);
     setProgress(0);
     setIsDone(false);
+    setError(null);
+    setVideoUrl(null);
 
-    const interval = setInterval(() => {
+    // Animate the progress bar while we wait for the real render
+    const progressInterval = setInterval(() => {
       setProgress((p) => {
-        if (p >= 100) {
-          clearInterval(interval);
-          setIsRendering(false);
-          setIsDone(true);
-          return 100;
-        }
-        return p + Math.random() * 8 + 2;
+        if (p >= 90) return 90; // Cap at 90% until real completion
+        return p + Math.random() * 3 + 1;
       });
-    }, 200);
+    }, 500);
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/render`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, project_id: `render_${Date.now()}` }),
+      });
+
+      if (!response.ok) throw new Error("Failed to start render");
+
+      const { task_id } = await response.json();
+
+      const poll = setInterval(async () => {
+        try {
+          const statusRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/status/${task_id}`);
+          const statusData = await statusRes.json();
+
+          if (statusData.status === "SUCCESS") {
+            clearInterval(poll);
+            clearInterval(progressInterval);
+            setProgress(100);
+
+            setTimeout(() => {
+              setIsRendering(false);
+              setIsDone(true);
+
+              if (statusData.result && statusData.result.video_url) {
+                setVideoUrl(statusData.result.video_url);
+              } else if (statusData.result && statusData.result.error) {
+                setError(statusData.result.error);
+              }
+            }, 400);
+          } else if (statusData.status === "FAILURE") {
+            clearInterval(poll);
+            clearInterval(progressInterval);
+            setIsRendering(false);
+            setError("Render failed on the server. Check your Manim code for errors.");
+          }
+        } catch {
+          clearInterval(poll);
+          clearInterval(progressInterval);
+          setIsRendering(false);
+          setError("Lost connection to the render server.");
+        }
+      }, 2000);
+    } catch {
+      clearInterval(progressInterval);
+      setIsRendering(false);
+      setError("Could not connect to the render server. Is it running?");
+    }
+  };
+
+  const handleDownload = () => {
+    if (!videoUrl) return;
+    const a = document.createElement("a");
+    a.href = videoUrl;
+    a.download = `manim-render.${format}`;
+    a.target = "_blank";
+    a.click();
   };
 
   const selectedQ = qualities.find((q) => q.id === quality)!;
@@ -51,6 +121,12 @@ export default function RenderPage() {
         <div className="mb-10">
           <h1 className="text-3xl font-bold tracking-tight gradient-text mb-2">Render</h1>
           <p className="text-text-muted">Choose quality and format, then export your animation.</p>
+          {!code && (
+            <div className="mt-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-yellow-500 shrink-0" />
+              <p className="text-xs text-yellow-200">No code loaded. Go to the <a href="/editor" className="underline font-semibold">Editor</a> and save your code first.</p>
+            </div>
+          )}
         </div>
 
         {/* Quality Selection */}
@@ -104,11 +180,20 @@ export default function RenderPage() {
           </code>
         </div>
 
+        {/* Error */}
+        {error && (
+          <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
+            <p className="text-sm text-red-300">{error}</p>
+          </div>
+        )}
+
         {/* Render Button / Progress */}
         {!isRendering && !isDone && (
           <button
             onClick={startRender}
-            className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-accent text-white font-semibold hover:bg-accent-hover transition-all shadow-md hover:shadow-lg"
+            disabled={!code}
+            className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-accent text-white font-semibold hover:bg-accent-hover transition-all shadow-md hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Play className="w-5 h-5" />
             Start Render — {selectedQ.label} {format.toUpperCase()}
@@ -118,7 +203,7 @@ export default function RenderPage() {
         {isRendering && (
           <div className="space-y-3">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-text-muted">Rendering...</span>
+              <span className="text-text-muted">Rendering on cloud...</span>
               <span className="font-mono text-accent">{Math.min(Math.round(progress), 100)}%</span>
             </div>
             <div className="w-full h-2 rounded-full bg-bg-alt overflow-hidden">
@@ -145,8 +230,19 @@ export default function RenderPage() {
             <p className="text-sm text-text-muted mb-6">
               Your {selectedQ.label} {format.toUpperCase()} is ready.
             </p>
+
+            {videoUrl && (
+              <div className="mb-6">
+                <video src={videoUrl} controls autoPlay className="w-full max-w-md mx-auto rounded-lg shadow-lg border border-border" />
+              </div>
+            )}
+
             <div className="flex items-center justify-center gap-3">
-              <button className="flex items-center gap-2 px-6 py-3 rounded-xl bg-accent text-white font-semibold hover:bg-accent-hover transition-all">
+              <button
+                onClick={handleDownload}
+                disabled={!videoUrl}
+                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-accent text-white font-semibold hover:bg-accent-hover transition-all disabled:opacity-40"
+              >
                 <Download className="w-4 h-4" />
                 Download
               </button>
@@ -154,6 +250,8 @@ export default function RenderPage() {
                 onClick={() => {
                   setIsDone(false);
                   setProgress(0);
+                  setVideoUrl(null);
+                  setError(null);
                 }}
                 className="px-6 py-3 rounded-xl bg-surface border border-border text-text text-sm font-medium hover:bg-surface-hover transition-all"
               >

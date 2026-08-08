@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Mail, Lock, GitBranch, AlertCircle } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
@@ -14,6 +14,7 @@ export default function SignInPage() {
   const [loading, setLoading] = useState(false);
   
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -30,7 +31,8 @@ export default function SignInPage() {
       setError(signInError.message);
       setLoading(false);
     } else {
-      router.push("/creator");
+      const redirect = searchParams.get('redirect') || '/editor';
+      router.push(redirect);
       router.refresh();
     }
   };
