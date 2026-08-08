@@ -6,3 +6,4 @@ manim
 supabase
 python-dotenv
 pydantic
+slowapi

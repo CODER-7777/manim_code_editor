@@ -1,10 +1,9 @@
-version: '3.8'
-
 services:
   redis:
     image: redis:alpine
     ports:
       - "6379:6379"
+    command: redis-server --maxmemory 100mb --maxmemory-policy allkeys-lru
 
   web:
     build: .
@@ -16,12 +15,18 @@ services:
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-*}
     depends_on:
       - redis
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
 
   worker:
     build: .
-    command: celery -A worker.celery_app worker --loglevel=info
+    command: celery -A worker.celery_app worker --loglevel=info --concurrency=2
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
@@ -29,3 +34,8 @@ services:
       - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
     depends_on:
       - redis
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.5'
