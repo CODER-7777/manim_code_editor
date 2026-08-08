@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from worker import render_manim_code
 from celery.result import AsyncResult
@@ -8,6 +9,14 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = FastAPI(title="Manim Render Server")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class RenderRequest(BaseModel):
     code: str
