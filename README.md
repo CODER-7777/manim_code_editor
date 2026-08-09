@@ -1,55 +1,71 @@
 # Manim Code Editor
 
-A stunning, AI-powered web editor for writing, rendering, and tweaking [Manim](https://www.manim.community/) animations straight from your browser. Inspired by the educational beauty of 3Blue1Brown, this platform bridges the gap between writing complex math animations and rendering them seamlessly.
+A sophisticated web-based environment for developing, rendering, and refining Manim animations directly from your browser. Inspired by 3Blue1Brown, this platform provides a seamless experience for creating complex mathematical animations without the overhead of local environment configuration.
 
-## 🚀 Features (Frontend)
-- **Glassmorphism UI**: Beautiful, dark/light adaptive user interface leveraging Tailwind CSS v4.
-- **Floating Backgrounds**: Interactive math and code elements floating seamlessly in the background.
-- **Monaco Code Editor**: VS-Code-like editing experience with syntax highlighting (coming soon).
-- **Live Preview**: See the output `.mp4` Manim animations instantly after rendering.
-- **AI Creator**: An AI-assisted chat interface to help generate Manim code from natural language prompts.
+## Overview
 
-## 🏗️ Architecture Flow
+Manim Code Editor bridges the gap between writing Python animation scripts and rendering them. It features an intelligent dual-architecture system designed for scalability, pairing a lightweight, globally distributed frontend with a robust, asynchronous Python rendering engine.
 
-This project uses a dual-architecture setup to separate the lightweight frontend from the heavy Python rendering engine.
+### Frontend Features
+
+* **Glassmorphism Interface**: A modern, adaptive user interface built with Tailwind CSS v4, supporting both light and dark themes.
+* **Integrated Editor**: A VS Code-style editing environment utilizing Monaco Editor for Python syntax highlighting and code completion.
+* **Instant Preview**: Seamlessly view rendered `.mp4` Manim outputs directly within the workspace.
+* **AI Assistance**: An integrated AI chat interface designed to help generate and modify Manim code from natural language prompts.
+
+## Architecture & Technical Deep Dive
+
+For contributors, understanding how the pieces fit together is crucial. Manim Code Editor uses a **dual-architecture setup** to solve a specific problem: Manim is a heavy Python library that requires system-level dependencies (FFmpeg, LaTeX, Cairo), which makes it impossible to run in standard serverless environments (like Vercel or AWS Lambda).
+
+To solve this, we decoupled the application into two distinct environments.
 
 ```mermaid
-graph TD
-    A[Client Browser] -->|Write Code / Prompt| B(Next.js App Router)
-    B -->|Save Code| C[(Supabase Database)]
-    B -->|Send Code to Render| D{Python FastAPI Backend}
+sequenceDiagram
+    participant User as Client Browser
+    participant FE as Next.js (Vercel)
+    participant DB as Supabase
+    participant API as FastAPI (Docker)
+    participant Worker as Celery Worker
     
-    D -->|Push to Queue| E[Celery / Redis Queue]
-    E -->|Execute| F[Dockerized Manim Worker]
+    User->>FE: Click "Render Animation"
+    FE->>DB: Save Python Code
+    FE->>API: POST /render {code}
+    API->>Worker: Dispatch Celery Task
+    API-->>FE: Return task_id (Status: Processing)
     
-    F -->|Upload .mp4| G[(Supabase Storage)]
-    F -->|Return URL| D
-    D -->|Send URL| B
-    B -->|Play Video| A
+    loop Polling
+        FE->>API: GET /status/{task_id}
+    end
+    
+    Worker->>Worker: Sandbox Execute Manim
+    Worker->>DB: Upload rendered .mp4
+    Worker-->>API: Task Complete
+    
+    API-->>FE: Return .mp4 URL
+    FE-->>User: Display Video
 ```
 
-### 1. Frontend: Next.js (App Router)
-- Handles user authentication, project saving, and the beautiful interactive UI.
-- Deployed on **Vercel** (Serverless, globally distributed).
+### 1. The Frontend (Next.js App Router)
+* **Hosting:** Vercel (Edge Network)
+* **Purpose:** Handles the user interface, authentication, and state management. Because it's deployed on Vercel, it scales infinitely and handles traffic spikes effortlessly.
+* **Key Components:**
+  * Uses **Monaco Editor** for the code editing experience.
+  * Polls the backend when a render is requested to update the UI with progress.
 
-### 2. Backend: Python FastAPI & Manim
-- Manim requires `ffmpeg`, `LaTeX`, and `libcairo`. These dependencies are heavy and cannot be run on Vercel's edge network.
-- We use a **Dockerized Python Backend** running FastAPI to receive render requests.
-- Uses **Celery + Redis** to handle concurrent users rendering at the same time without crashing the server.
-- Deployed on a **DigitalOcean Droplet** (Virtual Machine).
+### 2. The Rendering Engine (Python FastAPI + Celery)
+* **Hosting:** Dockerized environment on a dedicated VPS (e.g., DigitalOcean).
+* **Purpose:** Safely executes user-submitted Python code and generates animations.
+* **The "Traffic Jam" Problem:** Rendering video is CPU-intensive. If 50 users click "Render" simultaneously, a standard API would crash. 
+* **The Solution:** 
+  * The **FastAPI** server instantly accepts the request and places it into a **Redis Queue**.
+  * A **Celery Worker** picks up jobs one by one (based on CPU availability), ensuring the server never runs out of memory.
+  * We enforce **Code Sandboxing** (stripping out dangerous imports like `os` or `subprocess`) and **Timeouts** to prevent malicious code execution.
 
-### 3. Database & Storage: Supabase
-- Acts as our PostgreSQL database for saving user projects and credentials.
-- Uses **Supabase Storage** to store the rendered `.mp4` video outputs.
+### 3. Database & Storage (Supabase)
+* **PostgreSQL:** Stores user accounts, OAuth identities, and saved project code.
+* **Storage Buckets:** Holds the final `.mp4` files generated by the Celery worker, serving them back to the Next.js frontend via a public URL.
 
-## 🛠️ GitHub Student Developer Pack Benefits
-This project is strategically designed to utilize the GitHub Student Developer Pack for 100% free hosting:
-1. **DigitalOcean**: Use the $200 platform credit to spin up the Ubuntu Droplet that will host the heavy Dockerized Manim rendering backend.
-2. **Namecheap / Name.com**: Use the 1-year free domain registration to give this project a custom domain name (e.g., `manimeditor.me`).
-3. **Frontend**: Vercel provides free frontend hosting.
-4. **Database**: Supabase provides a generous free tier.
-
-## 📂 Folder Structure
+## Directory Structure
 
 ```
 .
@@ -59,22 +75,67 @@ This project is strategically designed to utilize the GitHub Student Developer P
 │   ├── public/           # Static Assets
 │   └── package.json      # Frontend Dependencies
 │
-├── backend/              # Python FastAPI Rendering Server (Upcoming)
-│   ├── main.py           # API endpoints
-│   ├── worker.py         # Celery tasks for executing manim
-│   └── Dockerfile        # Container with FFmpeg, LaTeX, and Manim
+├── backend/              # Python FastAPI Rendering Server
+│   ├── main.py           # API endpoints and rate limiting
+│   ├── worker.py         # Celery tasks for executing manim safely
+│   ├── requirements.txt  # Python dependencies
+│   └── docker-compose.yml# Container orchestration
 │
 ├── .gitignore
 └── README.md
 ```
 
-## 💻 Getting Started (Local Development)
+## Getting Started (Local Development)
 
-### Frontend
-1. Navigate to the frontend directory: `cd app`
-2. Install dependencies: `npm install`
-3. Run the dev server: `npm run dev`
-4. Visit `http://localhost:3000`
+### Frontend Setup
 
-### Backend (Coming Soon)
-*(Detailed instructions for spinning up the Dockerized FastAPI backend will be added in Phase 9).*
+1. Navigate to the frontend directory:
+   ```bash
+   cd app
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Run the development server:
+   ```bash
+   npm run dev
+   ```
+4. Access the application at `http://localhost:3000`.
+
+### Backend Setup
+
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
+2. Start the Docker containers (FastAPI, Celery, Redis):
+   ```bash
+   docker-compose up --build
+   ```
+3. The API will be available at `http://localhost:8000`.
+
+## Contributing
+
+I welcome contributions to the Manim Code Editor! Please follow these steps to contribute:
+
+1. Fork the repository.
+2. Create a new branch for your feature or bug fix: `git checkout -b feature/your-feature-name`.
+3. Commit your changes with clear, descriptive messages: `git commit -m 'Add some feature'`.
+4. Push to your branch: `git push origin feature/your-feature-name`.
+5. Open a Pull Request against the `main` branch.
+
+Please ensure your code follows the existing style and includes appropriate documentation.
+
+## Reporting Issues
+
+If you encounter a bug, have a feature request, or need help, please open an issue in the GitHub repository. When submitting an issue, please include:
+
+* A clear and descriptive title.
+* Steps to reproduce the issue (if reporting a bug).
+* Details about your environment (OS, browser, etc.).
+* Any relevant error logs or screenshots.
+
+## License
+
+This project is open-source and available under the MIT License.
