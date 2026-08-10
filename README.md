@@ -139,3 +139,5 @@ If you encounter a bug, have a feature request, or need help, please open an iss
 ## License
 
 This project is open-source and available under the MIT License.
+
+Developed by Mansoju Vivekananda.
