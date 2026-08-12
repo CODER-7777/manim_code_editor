@@ -11,6 +11,7 @@ import {
   Maximize2,
   ChevronDown,
 } from "lucide-react";
+import Editor from "@monaco-editor/react";
 
 const defaultCode = `from manim import *
 
@@ -171,26 +172,24 @@ export default function EditorPage() {
             <span className="text-xs text-text-muted font-mono ml-2">{fileName}</span>
           </div>
 
-          {/* Code Editor (textarea for now, Monaco integration later) */}
-          <div className="flex-1 relative bg-bg">
-            <div className="absolute inset-0 flex">
-              {/* Line numbers */}
-              <div className="w-10 bg-surface border-r border-border py-3 select-none overflow-hidden">
-                {code.split("\n").map((_, i) => (
-                  <div key={i} className="text-right pr-2.5 text-[11px] text-text-muted/50 leading-relaxed font-mono">
-                    {i + 1}
-                  </div>
-                ))}
-              </div>
-
-              {/* Text area */}
-              <textarea
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                className="flex-1 bg-transparent text-text p-3 font-mono text-[13px] leading-relaxed resize-none outline-none"
-                spellCheck={false}
-              />
-            </div>
+          {/* Code Editor */}
+          <div className="flex-1 relative bg-[#1e1e1e]">
+            <Editor
+              height="100%"
+              defaultLanguage="python"
+              theme="vs-dark"
+              value={code}
+              onChange={(value) => setCode(value || "")}
+              options={{
+                minimap: { enabled: false },
+                fontSize: 14,
+                fontFamily: "'JetBrains Mono', 'Courier New', Courier, monospace",
+                wordWrap: "on",
+                automaticLayout: true,
+                padding: { top: 16 },
+                scrollBeyondLastLine: false,
+              }}
+            />
           </div>
         </div>
 
