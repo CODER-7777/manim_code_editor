@@ -23,13 +23,14 @@ export default function SignUpPage() {
     setError(null);
     setLoading(true);
 
-    const { error: signUpError } = await supabase.auth.signUp({
+    const { error: signUpError, data } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
           full_name: fullName,
         },
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
 
@@ -39,13 +40,11 @@ export default function SignUpPage() {
     } else {
       setSuccess(true);
       setLoading(false);
-      setTimeout(() => {
-        router.push("/creator");
-      }, 2000);
+      // We don't push to /creator immediately because they need to verify their email
     }
   };
 
-  const handleOAuthSignIn = async (provider: 'google' | 'github') => {
+  const handleOAuthSignIn = async (provider: 'google') => {
     setError(null);
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
@@ -83,7 +82,7 @@ export default function SignUpPage() {
         {success && (
           <div className="mb-4 p-3 rounded-xl bg-green-500/10 border border-green-500/20 flex items-start gap-2 relative z-10">
             <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
-            <p className="text-sm text-green-500">Account created successfully! Redirecting...</p>
+            <p className="text-sm text-green-500">Account created successfully! Please check your email to verify your account.</p>
           </div>
         )}
 
