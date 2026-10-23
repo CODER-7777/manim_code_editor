@@ -44,17 +44,40 @@ export default function CreatorPage() {
     setInput("");
     setIsLoading(true);
 
-    // Simulated AI response (replace with real API call later)
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: userMsg.content,
+          provider: aiProvider,
+        }),
+      });
+
+      const data = await res.json();
+      const content =
+        data.response ||
+        data.error ||
+        "Failed to generate animation code. Please check your network connection.";
+
       const aiMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: generateMockResponse(userMsg.content),
+        content,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, aiMsg]);
+    } catch (err: any) {
+      const errorMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: `Error contacting AI service: ${err?.message || "Network error"}. Please try again.`,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMsg]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const handleCopy = (id: string, content: string) => {
@@ -246,24 +269,4 @@ export default function CreatorPage() {
       </div>
     </div>
   );
-}
-
-// Mock response generator — replace with real Gemini/Ollama API later
-function generateMockResponse(prompt: string): string {
-  return `Here's the Manim code for your request:
-
-from manim import *
-
-class CustomScene(Scene):
-    def construct(self):
-        # Based on: "${prompt}"
-        
-        title = Text("${prompt.slice(0, 30)}...", font_size=36)
-        title.set_color(BLUE)
-        
-        self.play(Write(title))
-        self.wait()
-        self.play(FadeOut(title))
-
-You can paste this into the Editor and hit Render to see it in action!`;
 }
