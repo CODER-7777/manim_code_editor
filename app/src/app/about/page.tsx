@@ -9,7 +9,7 @@ export default function AboutPage() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         {/* Header */}
         <div className="mb-10">
-          <h1 className="text-3xl font-bold tracking-tight gradient-text mb-2">About</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-text mb-2">About</h1>
           <p className="text-text-muted">The story behind ManimEditor, and the people who made it possible.</p>
         </div>
 

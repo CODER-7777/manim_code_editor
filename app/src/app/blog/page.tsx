@@ -44,7 +44,7 @@ export default function BlogPage() {
     <div className="max-w-3xl mx-auto px-6 py-12">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <div className="mb-10">
-          <h1 className="text-3xl font-bold tracking-tight gradient-text mb-2">Blog</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-text mb-2">Blog</h1>
           <p className="text-text-muted">Thoughts on math, code, and building things.</p>
         </div>
 
