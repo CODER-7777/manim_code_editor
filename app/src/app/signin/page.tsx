@@ -4,7 +4,7 @@ import { useState, Suspense } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowRight, Mail, Lock, GitBranch, AlertCircle } from "lucide-react";
+import { ArrowRight, Mail, Lock, AlertCircle } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
 function SignInContent() {
@@ -37,7 +37,7 @@ function SignInContent() {
     }
   };
 
-  const handleOAuthSignIn = async (provider: 'google' | 'github') => {
+  const handleOAuthSignIn = async (provider: 'google') => {
     setError(null);
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
