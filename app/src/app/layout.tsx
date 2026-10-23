@@ -4,7 +4,6 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Navbar from "@/components/Navbar";
 import DotGrid from "@/components/DotGrid";
-import FloatingMath from "@/components/FloatingMath";
 import "./globals.css";
 
 const inter = Inter({
@@ -40,7 +39,6 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col">
         <ThemeProvider>
           <DotGrid />
-          <FloatingMath />
           <Navbar />
           <main className="flex-1 pt-16 relative z-10">{children}</main>
         </ThemeProvider>
