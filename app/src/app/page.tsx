@@ -4,6 +4,7 @@ import { motion, Variants } from "framer-motion";
 import { ArrowRight, Sparkles, Play, Download, Zap, Shield, Code } from "lucide-react";
 import Link from "next/link";
 import FloatingCode from "@/components/FloatingCode";
+import InteractiveSphere from "@/components/InteractiveSphere";
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 30 },
@@ -79,6 +80,7 @@ export default function HomePage() {
     <div className="relative">
       {/* ===== HERO ===== */}
       <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
+        <InteractiveSphere />
         <FloatingCode />
 
         <div className="max-w-5xl mx-auto px-6 py-24 relative" style={{ zIndex: 2 }}>
@@ -339,12 +341,13 @@ export default function HomePage() {
               </span>
             </div>
             <p className="text-xs text-text-muted text-center">
-              Built with ❤️ · Powered by{" "}
-              <a href="https://www.manim.community/" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
-                Manim Community
-              </a>{" "}
-              · Thanks to{" "}
-              <a href="https://www.3blue1brown.com/" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
+              Built by Mansoju Vivekananda @ 2026 · Thanks to{" "}
+              <a
+                href="https://www.youtube.com/@3blue1brown"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-accent hover:underline"
+              >
                 3Blue1Brown
               </a>
             </p>
