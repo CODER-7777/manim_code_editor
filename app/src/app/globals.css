@@ -146,15 +146,6 @@ body {
   position: relative;
   overflow: hidden;
 }
-.code-block::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent), var(--accent-bright), transparent);
-}
 
 /* ---------- Gradient Text ---------- */
 .gradient-text {
@@ -180,25 +171,4 @@ body {
 @keyframes blink {
   0%, 50% { opacity: 1; }
   51%, 100% { opacity: 0; }
-}
-
-/* ---------- Glow ---------- */
-.glow {
-  box-shadow: 0 0 20px var(--accent-glow), 0 0 60px var(--accent-glow);
-}
-
-/* ---------- Float Animation ---------- */
-@keyframes sine-float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
-.float-sine {
-  animation: sine-float 6s ease-in-out infinite;
-}
-
-/* ---------- Terminal Prompt ---------- */
-.terminal-prompt::before {
-  content: '$ ';
-  color: var(--accent);
-  font-weight: 700;
 }
