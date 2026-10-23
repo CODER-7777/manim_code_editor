@@ -119,12 +119,12 @@ export default function RenderPage() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         {/* Header */}
         <div className="mb-10">
-          <h1 className="text-3xl font-bold tracking-tight gradient-text mb-2">Render</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-text mb-2">Render</h1>
           <p className="text-text-muted">Choose quality and format, then export your animation.</p>
           {!code && (
             <div className="mt-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30 flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-yellow-500 shrink-0" />
-              <p className="text-xs text-yellow-200">No code loaded. Go to the <a href="/editor" className="underline font-semibold">Editor</a> and save your code first.</p>
+              <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
+              <p className="text-xs text-amber-800 dark:text-amber-200">No code loaded. Go to the <a href="/editor" className="underline font-semibold">Editor</a> and save your code first.</p>
             </div>
           )}
         </div>
@@ -174,7 +174,7 @@ export default function RenderPage() {
 
         {/* Command Preview */}
         <div className="mb-8 p-4 rounded-xl bg-code-bg border border-border">
-          <p className="text-xs text-white/40 mb-1 font-mono">Command:</p>
+          <p className="text-xs text-code-text/60 mb-1 font-mono">Command:</p>
           <code className="text-sm text-code-text font-mono">
             $ manim render scene.py {selectedQ.flag} --format {format}
           </code>
@@ -183,8 +183,8 @@ export default function RenderPage() {
         {/* Error */}
         {error && (
           <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
-            <p className="text-sm text-red-300">{error}</p>
+            <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
+            <p className="text-sm text-red-800 dark:text-red-300">{error}</p>
           </div>
         )}
 
