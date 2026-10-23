@@ -12,6 +12,8 @@ import {
   ChevronDown,
 } from "lucide-react";
 import Editor from "@monaco-editor/react";
+import { useTheme } from "@/components/ThemeProvider";
+import EditorErrorBoundary from "@/components/EditorErrorBoundary";
 
 const defaultCode = `from manim import *
 
@@ -29,6 +31,7 @@ class MyScene(Scene):
 `;
 
 export default function EditorPage() {
+  const { theme } = useTheme();
   const [code, setCode] = useState(defaultCode);
   const [consoleOutput, setConsoleOutput] = useState("Ready. Write your Manim code and click Run.\n");
   const [isRunning, setIsRunning] = useState(false);
@@ -173,23 +176,25 @@ export default function EditorPage() {
           </div>
 
           {/* Code Editor */}
-          <div className="flex-1 relative bg-[#1e1e1e]">
-            <Editor
-              height="100%"
-              defaultLanguage="python"
-              theme="vs-dark"
-              value={code}
-              onChange={(value) => setCode(value || "")}
-              options={{
-                minimap: { enabled: false },
-                fontSize: 14,
-                fontFamily: "'JetBrains Mono', 'Courier New', Courier, monospace",
-                wordWrap: "on",
-                automaticLayout: true,
-                padding: { top: 16 },
-                scrollBeyondLastLine: false,
-              }}
-            />
+          <div className="flex-1 relative bg-surface dark:bg-[#1e1e1e]">
+            <EditorErrorBoundary fallbackCode={code} onFallbackCodeChange={(newVal) => setCode(newVal)}>
+              <Editor
+                height="100%"
+                defaultLanguage="python"
+                theme={theme === "light" ? "light" : "vs-dark"}
+                value={code}
+                onChange={(value) => setCode(value || "")}
+                options={{
+                  minimap: { enabled: false },
+                  fontSize: 14,
+                  fontFamily: "'JetBrains Mono', 'Courier New', Courier, monospace",
+                  wordWrap: "on",
+                  automaticLayout: true,
+                  padding: { top: 16 },
+                  scrollBeyondLastLine: false,
+                }}
+              />
+            </EditorErrorBoundary>
           </div>
         </div>
 
