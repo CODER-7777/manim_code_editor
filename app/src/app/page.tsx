@@ -3,6 +3,7 @@
 import { motion, Variants } from "framer-motion";
 import { ArrowRight, Sparkles, Play, Download, Zap, Shield, Code } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import FloatingCode from "@/components/FloatingCode";
 import InteractiveSphere from "@/components/InteractiveSphere";
 
@@ -324,17 +325,14 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-md flex items-center justify-center bg-accent/10 border border-accent/20">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M3 12C3 12 7 5 12 5C17 5 21 12 21 12C21 12 17 19 12 19C7 19 3 12 3 12Z"
-                    className="stroke-accent"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <circle cx="12" cy="12" r="3" className="fill-accent-brown" />
-                </svg>
+              <div className="w-6 h-6 rounded-md overflow-hidden flex items-center justify-center bg-accent/10 border border-accent/20">
+                <Image
+                  src="/logo.png"
+                  alt="ManimEditor Logo"
+                  width={24}
+                  height={24}
+                  className="w-full h-full object-cover"
+                />
               </div>
               <span className="font-bold text-sm text-text">
                 Manim<span className="text-accent">Editor</span>
