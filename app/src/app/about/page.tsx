@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Heart, GitBranch, ExternalLink, BookOpen, Code, Sparkles } from "lucide-react";
+import { GitBranch, ExternalLink, BookOpen, Code, Users } from "lucide-react";
 
 export default function AboutPage() {
   return (
@@ -76,8 +76,8 @@ export default function AboutPage() {
         {/* Credits */}
         <section className="mb-10">
           <h2 className="text-xl font-semibold text-text mb-4 flex items-center gap-2">
-            <Heart className="w-5 h-5 text-accent" />
-            Credits & Thanks
+            <Users className="w-5 h-5 text-accent" />
+            Credits &amp; Acknowledgments
           </h2>
           <div className="space-y-3">
             {[
@@ -121,47 +121,13 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Tech Stack */}
-        <section className="mb-10">
-          <h2 className="text-xl font-semibold text-text mb-4 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-accent" />
-            Tech Stack
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {[
-              "Next.js 15",
-              "TypeScript",
-              "Tailwind CSS",
-              "Framer Motion",
-              "Monaco Editor",
-              "Supabase",
-              "Gemini AI",
-              "Ollama",
-              "Docker + Manim",
-              "Redis (BullMQ)",
-              "DigitalOcean",
-              "Vercel",
-            ].map((tech) => (
-              <div
-                key={tech}
-                className="px-4 py-2.5 rounded-xl bg-surface border border-border text-center text-xs font-medium text-text-secondary"
-              >
-                {tech}
-              </div>
-            ))}
-          </div>
-        </section>
-
         {/* Footer Note */}
         <div className="text-center py-8 border-t border-border">
-          <p className="text-sm text-text-muted">
-            Made with <span className="text-accent">❤️</span> as a passion project.
-          </p>
           <a
             href="https://github.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 mt-3 text-xs font-medium text-accent hover:underline"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-text-muted hover:text-accent transition-colors"
           >
             <GitBranch className="w-3.5 h-3.5" />
             View on GitHub
