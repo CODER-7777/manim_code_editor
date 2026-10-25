@@ -23,6 +23,13 @@ export const metadata: Metadata = {
   description:
     "Write, animate, and export Manim animations with AI assistance. Free, open-source, no watermarks.",
   keywords: ["manim", "animation", "math", "3blue1brown", "code editor", "AI"],
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icon.png", type: "image/png", sizes: "32x32" },
+    ],
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({
