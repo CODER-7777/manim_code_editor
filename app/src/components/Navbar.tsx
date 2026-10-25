@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -70,11 +71,15 @@ export default function Navbar() {
         <nav className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-accent/10 border border-accent/20">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 12C3 12 7 5 12 5C17 5 21 12 21 12C21 12 17 19 12 19C7 19 3 12 3 12Z" className="stroke-accent" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <circle cx="12" cy="12" r="3" className="fill-accent-brown"/>
-              </svg>
+            <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center bg-accent/10 border border-accent/20">
+              <Image
+                src="/logo.png"
+                alt="ManimEditor Logo"
+                width={32}
+                height={32}
+                className="w-full h-full object-cover"
+                priority
+              />
             </div>
             <span className="font-bold text-lg tracking-tight text-text">
               Manim<span className="text-accent">Editor</span>
